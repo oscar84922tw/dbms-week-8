@@ -9,20 +9,33 @@ var Member = function(options) {
   this.account = options.account;
 };
 
-//Class Function
+Member.getAccount = function(account, cb) {
+    db.select().from('member').where({
+      account: account
+    }).map(function(row) {
+      return new Member(row)
+    }).then(function(memberList) {
+      if (memberList.length) {
+        cb(null, memberList[0]);
+      } else {
+        cb(new GeneralErrors.NotFound());
+      }
+    })
+  }
+  //Class Function
 Member.get = function(memberId, cb) {
   //這邊是當傳入一個memberId時，進入資料庫查出相對應的member資料
   db.select()
     .from('member')
     .where({
-      id : memberId
+      id: memberId
     })
     .map(function(row) {
       //將select出來的資料轉換成Member物件
       return new Member(row);
     })
     .then(function(memberList) {
-      if(memberList.length) {
+      if (memberList.length) {
         cb(null, memberList[0]);
       } else {
         //這邊要產生一個NotFound err給前端，因為error很常用到，我們會獨立出去一個檔案
@@ -37,18 +50,18 @@ Member.get = function(memberId, cb) {
 //我們接下來嘗試是否可以正確取得資料
 //接下來完成其他會用到的function
 //Instance Function
-Member.prototype.save = function (cb) {
+Member.prototype.save = function(cb) {
   //save的概念是當物件不存在時新增，存在時對DB做更新
   if (this.id) {
     //已存在
     db("member")
       .where({
-        id : this.id
+        id: this.id
       })
       .update({
-        name : this.name,
-        account : this.account,
-        password : this.password
+        name: this.name,
+        account: this.account,
+        password: this.password
       })
       .then(function() {
         cb(null, this);
